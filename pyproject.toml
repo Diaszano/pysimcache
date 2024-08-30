@@ -5,6 +5,10 @@ description = ""
 authors = ["Diaszano <61257292+Diaszano@users.noreply.github.com>"]
 license = "MIT"
 readme = "README.md"
+packages = [{include = "app"}]
+
+[tool.poetry.scripts]
+cache_simulator = "app.cli:main"
 
 [tool.poetry.dependencies]
 python = "^3.12"
