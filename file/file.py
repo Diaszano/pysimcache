@@ -13,6 +13,7 @@ Funções:
 File.read(path: str) -> Union[List[int], None]
     Lê o conteúdo de um arquivo binário e retorna como uma lista de inteiros.
 """
+
 from os.path import exists
 from typing import Union, List
 
@@ -26,6 +27,7 @@ class File:
     __address_size : int
         Tamanho do endereço em bits. Padrão é 32 bits.
     """
+
     __address_size = 32
 
     @staticmethod
@@ -47,7 +49,7 @@ class File:
             return None
 
         address_array: List[int] = []
-        with open(file=path, mode='rb') as file:
+        with open(file=path, mode="rb") as file:
             while address := file.read(int(File.__address_size / 8)):
                 address_array.append(int.from_bytes(address))
 
@@ -68,4 +70,4 @@ class File:
         bool
             True se o caminho for válido e o arquivo tiver extensão '.bin', False caso contrário.
         """
-        return exists(path) and path.endswith('.bin')
+        return exists(path) and path.endswith(".bin")
