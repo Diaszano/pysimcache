@@ -36,7 +36,7 @@ TestFile.test_read_vortex(self: Self) -> None
 """
 
 from unittest import TestCase, main
-from file import File
+from app.file import File
 from typing import Self, List
 
 
@@ -68,7 +68,7 @@ class TestFile(TestCase):
         """
         Testa a leitura de um caminho de arquivo inválido.
         """
-        file = File.read("")
+        file = File.read_bin_file("")
 
         self.assertIsNone(file)
 
@@ -76,7 +76,7 @@ class TestFile(TestCase):
         """
         Testa a leitura de um arquivo com extensão inválida.
         """
-        file = File.read("address/bin_100.txt")
+        file = File.read_bin_file("address/bin_100.txt")
 
         self.assertIsNone(file)
 
@@ -84,7 +84,7 @@ class TestFile(TestCase):
         """
         Testa a leitura de um arquivo binário válido.
         """
-        file = File.read("address/bin_100.bin")
+        file = File.read_bin_file("address/bin_100.bin")
 
         self.assertIsNotNone(file)
 
@@ -92,7 +92,7 @@ class TestFile(TestCase):
         """
         Testa a leitura do arquivo binário 'bin_100.bin' e compara com 'bin_100.txt'.
         """
-        file_bin = File.read("address/bin_100.bin")
+        file_bin = File.read_bin_file("address/bin_100.bin")
         file_txt = self.read_txt("address/bin_100.txt")
 
         self.assertEqual(file_bin, file_txt)
@@ -101,7 +101,7 @@ class TestFile(TestCase):
         """
         Testa a leitura do arquivo binário 'bin_1000.bin' e compara com 'bin_1000.txt'.
         """
-        file_bin = File.read("address/bin_1000.bin")
+        file_bin = File.read_bin_file("address/bin_1000.bin")
         file_txt = self.read_txt("address/bin_1000.txt")
 
         self.assertEqual(file_bin, file_txt)
@@ -110,7 +110,7 @@ class TestFile(TestCase):
         """
         Testa a leitura do arquivo binário 'bin_10000.bin' e compara com 'bin_10000.txt'.
         """
-        file_bin = File.read("address/bin_10000.bin")
+        file_bin = File.read_bin_file("address/bin_10000.bin")
         file_txt = self.read_txt("address/bin_10000.txt")
 
         self.assertEqual(file_bin, file_txt)
@@ -119,7 +119,7 @@ class TestFile(TestCase):
         """
         Testa a leitura do arquivo binário 'vortex.in.sem.persons.bin' e compara com 'vortex.in.sem.persons.txt'.
         """
-        file_bin = File.read("address/vortex.in.sem.persons.bin")
+        file_bin = File.read_bin_file("address/vortex.in.sem.persons.bin")
         file_txt = self.read_txt("address/vortex.in.sem.persons.txt")
 
         self.assertEqual(file_bin, file_txt)
