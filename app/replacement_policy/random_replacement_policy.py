@@ -1,57 +1,39 @@
-from typing import List, Any
 from random import randint
+
 from .replacement_policy import ReplacementPolicy
 
+
 class RandomReplacementPolicy(ReplacementPolicy):
-    """
-    Implementação da política de substituição aleatória para caches.
+	"""Implementa a política de substituição aleatória (Random Replacement Policy).
+	Um elemento existente é substituído por um novo em uma posição aleatória.
+	"""  # noqa: E501
 
-    Esta classe implementa a política de substituição onde um item é escolhido aleatoriamente
-    e substituído por um novo item. Herda da classe abstrata `ReplacementPolicy` e fornece
-    uma implementação concreta do método `add`.
+	@staticmethod
+	def add(block: list[any], new: any) -> list[any]:
+		"""Adiciona um novo elemento à lista usando a política de substituição aleatória.
 
-    Métodos:
-    --------
-    add(block: List[Any], new: Any) -> List[Any]
-        Substitui um item aleatório no bloco de cache com um novo item.
+		Se a lista estiver vazia ou tiver apenas um elemento, o novo elemento será o único na lista.
+		Se o novo elemento já estiver na lista, não haverá mudanças.
+		Se o novo elemento for diferente, ele substituirá um elemento existente em uma posição aleatória da lista.
 
-    Parâmetros:
-    -----------
-    block : List[Any]
-        A lista atual de itens no bloco de cache. Pode conter qualquer tipo de objeto.
-    new : Any
-        O novo item a ser adicionado ao bloco de cache.
+		Args:
+		----
+			block (list[any]): A lista de elementos atuais.
+			new (any): O novo elemento a ser adicionado.
 
-    Retorna:
-    --------
-    List[Any]
-        A lista de itens no bloco de cache após a substituição do item aleatório
-        pelo novo item.
-    """
+		Returns:
+		-------
+			list[any]: A nova lista após aplicar a política de substituição aleatória.
 
-    @staticmethod
-    def add(block: List[Any], new: Any) -> List[Any]:
-        """
-        Substitui um item aleatório no bloco de cache com o novo item fornecido.
+		"""  # noqa: E501
+		tmp = block.copy()
 
-        O método escolhe um índice aleatório no bloco de cache e substitui o
-        item nesse índice
-        pelo novo item.
+		if len(tmp) == 0 or len(tmp) == 1:
+			return [new]
 
-        Parâmetros:
-        -----------
-        block : List[Any]
-            A lista atual de itens no bloco de cache.
-        new : Any
-            O novo item a ser adicionado ao bloco de cache.
+		if new in tmp:
+			return tmp
 
-        Retorna:
-        --------
-        List[Any]
-            A lista atualizada de itens no bloco de cache após a substituição.
-        """
-        length = len(block)
+		tmp[randint(a=0, b=len(tmp) - 1)] = new
 
-        block[randint(a=0, b=length - 1)] = new
-
-        return block
+		return tmp
