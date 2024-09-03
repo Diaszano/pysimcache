@@ -1,98 +1,79 @@
-from os import stat
-from os.path import exists
-from typing import Union, List
+from pathlib import Path
+
 
 class File:
-    """
-    Classe utilitária para manipulação de arquivos, especialmente arquivos binários,
-    com métodos para leitura e validação de arquivos.
-    """
+	"""
+	Classe utilitária para manipulação de arquivos binários.
 
-    @staticmethod
-    def read_bin_file(path: str, address_size: int = 32) -> Union[List[int], None]:
-        """
-        Lê um arquivo binário e converte seu conteúdo em uma lista de endereços inteiros.
+	Contém métodos para ler arquivos binários e verificar a validade e integridade de arquivos.
+	"""  # noqa: E501
 
-        Parâmetros:
-        -----------
-        path: str
-            O caminho do arquivo binário a ser lido.
-        address_size: int
-            Tamanho de um endereço em bits
+	@staticmethod
+	def read_bin_file(
+		path: str,
+		address_size: int = 32,
+	) -> list[int] | None:
+		"""
+		Lê um arquivo binário e retorna uma lista de endereços como inteiros.
 
-        Retorna:
-        --------
-        Union[List[int], None]
-            Uma lista de endereços inteiros lidos do arquivo, ou None se o arquivo for inválido.
+		Este método lê o arquivo binário no caminho fornecido e divide seu conteúdo
+		em blocos de tamanho `address_size`. Cada bloco é convertido em um inteiro
+		e adicionado a uma lista.
 
-        Levanta:
-        --------
-        FileNotFoundError:
-            Se o arquivo não for encontrado ou for inválido.
-        """
-        if not File.is_valid_bin_file(path=path):
-            return None
+		Args:
+			path (str): O caminho para o arquivo binário a ser lido.
+			address_size (int, opcional): O tamanho do endereço em bits. O valor padrão é 32 bits.
 
-        address_array: List[int] = []
-        with open(file=path, mode="rb") as file:
-            while address := file.read(int(address_size / 8)):
-                address_array.append(int.from_bytes(address))
+		Returns:
+			list[int] | None: Uma lista de endereços inteiros se o arquivo for válido, ou None se o arquivo não for válido.
+		"""  # noqa: E501
+		if not File.is_valid_bin_file(path=path):
+			return None
 
-        return address_array
+		address_array: list[int] = []
+		with Path(path).open(mode='rb') as file:
+			while address := file.read(int(address_size / 8)):
+				address_array.append(int.from_bytes(address))
 
-    @staticmethod
-    def is_valid_file(path: str) -> bool:
-        """
-        Verifica se um arquivo existe e não está vazio.
+		return address_array
 
-        Parâmetros:
-        -----------
-        path: str
-            O caminho do arquivo a ser verificado.
+	@staticmethod
+	def is_valid_file(path: str) -> bool:
+		"""
+		Verifica se o arquivo existe e não está vazio.
 
-        Retorna:
-        --------
-        bool
-            True se o arquivo existir e não estiver vazio, False caso contrário.
-        """
-        return exists(path=path) and not File.is_file_empty(path=path)
+		Args:
+			path (str): O caminho do arquivo a ser verificado.
 
-    @staticmethod
-    def is_valid_bin_file(path: str) -> bool:
-        """
-        Verifica se um arquivo é um arquivo binário válido.
+		Returns:
+			bool: True se o arquivo existir e não estiver vazio, False caso contrário.
+		"""  # noqa: E501
+		return Path(path).exists() and not File.is_file_empty(path=path)
 
-        Parâmetros:
-        -----------
-        path: str
-            O caminho do arquivo a ser verificado.
+	@staticmethod
+	def is_valid_bin_file(path: str) -> bool:
+		"""
+		Verifica se o arquivo é um arquivo binário válido.
 
-        Retorna:
-        --------
-        bool
-            True se o arquivo existir, não estiver vazio e tiver a extensão '.bin',
-            False caso contrário.
-        """
-        return File.is_valid_file(path=path) and path.endswith(".bin")
+		Um arquivo binário válido é aquele que existe, não está vazio, e tem a extensão '.bin'.
 
-    @staticmethod
-    def is_file_empty(path: str) -> bool:
-        """
-        Verifica se um arquivo está vazio.
+		Args:
+			path (str): O caminho do arquivo binário a ser verificado.
 
-        Parâmetros:
-        -----------
-        path: str
-            O caminho do arquivo a ser verificado.
+		Returns:
+			bool: True se o arquivo for um binário válido, False caso contrário.
+		"""  # noqa: E501
+		return File.is_valid_file(path=path) and path.endswith('.bin')
 
-        Retorna:
-        --------
-        bool
-            True se o arquivo estiver vazio, False caso contrário.
+	@staticmethod
+	def is_file_empty(path: str) -> bool:
+		"""
+		Verifica se o arquivo está vazio.
 
-        Levanta:
-        --------
-        FileNotFoundError:
-            Se o arquivo não existir.
-        """
-        return stat(path=path).st_size == 0
+		Args:
+			path (str): O caminho do arquivo a ser verificado.
+
+		Returns:
+			bool: True se o arquivo estiver vazio, False caso contrário.
+		"""
+		return Path(path).stat().st_size == 0
