@@ -24,4 +24,57 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.taskipy.tasks]
-test = "python -m unittest tests/test_*.py"
+test = "python -m unittest discover -v -s tests"
+
+[tool.ruff]
+line-length = 80
+target-version = "py312"
+
+[tool.ruff.format]
+quote-style = "single"
+indent-style = "tab"
+docstring-code-format = true
+
+[tool.ruff.lint]
+select = [
+    "A",
+    "ARG",
+    "B",
+    "C",
+    "C4",
+    "C90",
+    "COM",
+    "DTZ",
+    "E",
+    "F",
+    "FA",
+    "FBT",
+    "FURB",
+    "G",
+    "I",
+    "INP",
+    "LOG",
+    "N",
+    "PERF",
+    "PIE",
+    "PL",
+    "PTH",
+    "PYI",
+    "RET",
+    "R",
+    "RUF",
+    "SIM",
+    "T20",
+    "TCH",
+    "TID",
+    "W",
+    "YTT"
+]
+ignore = [
+    "COM812",
+    "PLR0913",
+    "W191",
+]
+
+[tool.ruff.lint.pycodestyle]
+ignore-overlong-task-comments = true
