@@ -1,34 +1,29 @@
-from typing import List, Any
 from abc import ABC, abstractmethod
 
 
 class ReplacementPolicy(ABC):
-    """
-    Classe base abstrata para políticas de substituição em sistemas de cache.
+	"""Classe abstrata que define a interface para políticas de substituição de
+	cache.
 
-    Esta classe define a interface para diferentes políticas de substituição, como
-    FIFO, LRU, e outras.
-    """
+	Todas as classes que implementam uma política de substituição específica
+	(por exemplo, LRU, FIFO, Random) devem herdar de `ReplacementPolicy` e
+	implementar o método abstrato `add`. O método `add` é responsável por
+	definir como os elementos são gerenciados quando adicionados a uma lista.
+	"""
 
-    @staticmethod
-    @abstractmethod
-    def add(block: List[Any], new: Any) -> List[Any]:
-        """
-        Método abstrato que deve ser implementado para definir a política de substituição.
+	@staticmethod
+	@abstractmethod
+	def add(block: list[any], new: any) -> list[any]:
+		"""Método abstrato que deve ser implementado por subclasses para definir a lógica de substituição.
 
-        O método deve adicionar um novo item ao bloco de cache, possivelmente substituindo
-        um item existente, de acordo com a política de substituição específica.
+		Args:
+		----
+			block (list[any]): A lista de elementos atuais (blocos de cache ou memória).
+			new (any): O novo elemento a ser adicionado à lista.
 
-        Parâmetros:
-        -----------
-        block : List[Any]
-            A lista atual de itens no bloco de cache.
-        new : Any
-            O novo item a ser adicionado ao bloco de cache.
+		Returns:
+		-------
+			list[any]: A lista após a aplicação da política de substituição.
 
-        Retorna:
-        --------
-        List[Any]
-            A lista atualizada de itens no bloco de cache após a adição do novo item.
-        """
-        ...
+		"""  # noqa: E501
+		...
