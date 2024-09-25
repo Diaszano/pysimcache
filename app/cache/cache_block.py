@@ -83,3 +83,21 @@ class Block:
 			bool: Verdadeiro se os dois blocos forem diferentes.
 		"""
 		return not self == other
+
+	def __str__(self: 'Block') -> str:
+		"""
+		Retorna uma representação string da instância do bloco.
+
+		Returns:
+			str: Representação string da instância.
+		"""
+		return f'{{Tag: {self.tag}, Valid: {self.valid}}}'
+
+	def __repr__(self: 'Block') -> str:
+		"""
+		Retorna uma representação string da instância do bloco para fins de depuração.
+
+		Returns:
+			str: Representação string da instância para fins de depuração.
+		"""  # noqa: E501
+		return f'{{Tag: {self.tag}, Valid: {self.valid}}}'
