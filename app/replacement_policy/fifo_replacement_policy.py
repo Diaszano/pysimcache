@@ -8,8 +8,8 @@ from .replacement_policy import ReplacementPolicy
 class FIFO(ReplacementPolicy):
 	"""Implementa a política de substituição FIFO (First-In, First-Out).
 
-	O elemento mais antigo na lista é removido quando a lista atinge seu limite.
-	"""
+	O bloco mais antigo no conjunto é removido quando o conjunto atinge seu limite.
+	"""  # noqa: E501
 
 	@staticmethod
 	def add(blocks: list[Block], block: Block) -> list[Block]:
