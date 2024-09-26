@@ -48,7 +48,6 @@ select = [
     "E",
     "F",
     "FA",
-    "FBT",
     "FURB",
     "G",
     "I",
@@ -73,7 +72,7 @@ select = [
 ignore = [
     "COM812",
     "PLR0913",
-    "W191",
+    "W191"
 ]
 
 [tool.ruff.lint.pycodestyle]
