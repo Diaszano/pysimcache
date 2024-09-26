@@ -1,39 +1,68 @@
+from logging import debug, info, warning
 from random import randint
+
+from app.cache import Block
 
 from .replacement_policy import ReplacementPolicy
 
 
-class RandomReplacementPolicy(ReplacementPolicy):
-	"""Implementa a política de substituição aleatória (Random Replacement Policy).
-	Um elemento existente é substituído por um novo em uma posição aleatória.
+class Random(ReplacementPolicy):
+	"""Implementa a política de substituição Random.
+
+	Um bloco aleatório do conjunto é removido quando o conjunto atinge seu limite.
 	"""  # noqa: E501
 
 	@staticmethod
-	def add(block: list[any], new: any) -> list[any]:
-		"""Adiciona um novo elemento à lista usando a política de substituição aleatória.
+	def add(blocks: list[Block], block: Block) -> list[Block]:
+		"""Adiciona um bloco ao conjunto seguindo a política de substituição Random.
 
-		Se a lista estiver vazia ou tiver apenas um elemento, o novo elemento será o único na lista.
-		Se o novo elemento já estiver na lista, não haverá mudanças.
-		Se o novo elemento for diferente, ele substituirá um elemento existente em uma posição aleatória da lista.
-
-		Args:
-		----
-			block (list[any]): A lista de elementos atuais.
-			new (any): O novo elemento a ser adicionado.
-
+		Params:
+			blocks (list[Block]): Conjunto de blocos existente.
+			block (Block): Bloco a ser adicionado.
 		Returns:
-		-------
-			list[any]: A nova lista após aplicar a política de substituição aleatória.
-
+			list[Block]: Conjunto de blocos atualizado.
 		"""  # noqa: E501
-		tmp = block.copy()
+		debug(
+			'Aplicando política de substituição Random em conjunto com '
+			'%s blocos para adicionar o bloco %s',
+			len(blocks),
+			block,
+		)
+		tmp = blocks.copy()
 
-		if len(tmp) == 0 or len(tmp) == 1:
-			return [new]
+		if len(tmp) == 0:
+			warning(msg='Conjunto de blocos está vazio')
+			return []
 
-		if new in tmp:
+		if block in tmp:
+			info('Bloco %s já existe no conjunto', block)
 			return tmp
 
-		tmp[randint(a=0, b=len(tmp) - 1)] = new
+		position = Random.__get_index(blocks=blocks)
 
+		old_block = tmp[position]
+		tmp[position] = block
+
+		info('Removido bloco %s para inserir o bloco %s', old_block, block)
 		return tmp
+
+	@staticmethod
+	def __get_index(blocks: list[Block]) -> int:
+		"""
+		Retorna o índice do primeiro bloco inválido no conjunto ou um índice aleatório.
+
+		Params:
+			blocks: Conjunto de blocos.
+		Params:
+			int: Índice do primeiro bloco inválido (ou None se não houver) ou um índice aleatório.
+		"""  # noqa: E501
+
+		for i in range(len(blocks)):
+			if not blocks[i].valid:
+				debug('Bloco inválido encontrado na posição %s', i)
+				return i
+
+		random_index = randint(a=0, b=len(blocks) - 1)
+		debug('Índice aleatório gerado: %s', random_index)
+
+		return random_index
