@@ -1,6 +1,6 @@
 from typing import Type
 
-from app.replacement_policy import ReplacementPolicy
+from app.replacement_policy.random_replacement_policy import ReplacementPolicy
 
 from .cache_block import Block
 
