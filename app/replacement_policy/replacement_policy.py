@@ -1,29 +1,27 @@
-from abc import ABC, abstractmethod
+from abc import ABCMeta, abstractmethod
+
+from app.cache import Block
 
 
-class ReplacementPolicy(ABC):
-	"""Classe abstrata que define a interface para políticas de substituição de
-	cache.
+class ReplacementPolicy(metaclass=ABCMeta):
+	"""Classe abstrata que define a interface para políticas de substituição de cache.
 
 	Todas as classes que implementam uma política de substituição específica
 	(por exemplo, LRU, FIFO, Random) devem herdar de `ReplacementPolicy` e
 	implementar o método abstrato `add`. O método `add` é responsável por
-	definir como os elementos são gerenciados quando adicionados a uma lista.
-	"""
+	definir como os blocos são gerenciados quando adicionados a um conjunto.
+	"""  # noqa: E501
 
 	@staticmethod
 	@abstractmethod
-	def add(block: list[any], new: any) -> list[any]:
+	def add(blocks: list[Block], block: Block) -> list[Block]:
 		"""Método abstrato que deve ser implementado por subclasses para definir a lógica de substituição.
 
 		Args:
-		----
-			block (list[any]): A lista de elementos atuais (blocos de cache ou memória).
-			new (any): O novo elemento a ser adicionado à lista.
+			blocks (list[Block]): A lista de blocos atuais.
+			block (Block): O novo bloco a ser adicionado ao conjunto.
 
 		Returns:
-		-------
-			list[any]: A lista após a aplicação da política de substituição.
-
+			list[Block]: O conjunto após a aplicação da política de substituição.
 		"""  # noqa: E501
 		...
