@@ -1,16 +1,19 @@
 class Block:
 	"""Representa uma unidade de memória da cache."""
 
-	def __init__(self: 'Block') -> None:
+	def __init__(self: 'Block', valid: bool = False, tag: int = 0) -> None:
 		"""
 		Inicializa a instância do bloco.
 
-		Attributes:
+		Args:
 			valid (bool): Sinalizando se o bloco está válido ou não.
 			tag (int): Código de endereço associado ao bloco.
+
+		Returns:
+			None
 		"""
-		self.valid = False
-		self.tag: int = 0
+		self.valid = valid
+		self.tag = tag
 
 	def __eq__(self: 'Block', other: 'Block') -> bool:
 		"""
