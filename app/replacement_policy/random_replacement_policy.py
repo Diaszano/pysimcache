@@ -1,4 +1,4 @@
-from logging import debug, info, warning
+from logging import getLogger
 from random import randint
 
 from app.cache import Block
@@ -12,6 +12,8 @@ class Random(ReplacementPolicy):
 	Um bloco aleatório do conjunto é removido quando o conjunto atinge seu limite.
 	"""  # noqa: E501
 
+	__logger = getLogger(name=__name__)
+
 	@staticmethod
 	def add(blocks: list[Block], block: Block) -> list[Block]:
 		"""Adiciona um bloco ao conjunto seguindo a política de substituição Random.
@@ -22,7 +24,7 @@ class Random(ReplacementPolicy):
 		Returns:
 			list[Block]: Conjunto de blocos atualizado.
 		"""  # noqa: E501
-		debug(
+		Random.__logger.debug(
 			'Aplicando política de substituição Random em conjunto com '
 			'%s blocos para adicionar o bloco %s',
 			len(blocks),
@@ -32,15 +34,15 @@ class Random(ReplacementPolicy):
 		tmp = blocks.copy()
 
 		if not block.valid:
-			warning('O bloco %s é inválido', block)
+			Random.__logger.warning('O bloco %s é inválido', block)
 			return tmp
 
 		if len(tmp) == 0:
-			warning(msg='Conjunto de blocos está vazio')
+			Random.__logger.warning(msg='Conjunto de blocos está vazio')
 			return tmp
 
 		if block in tmp:
-			info('Bloco %s já existe no conjunto', block)
+			Random.__logger.info('Bloco %s já existe no conjunto', block)
 			return tmp
 
 		position = Random.__get_index(blocks=blocks)
@@ -48,7 +50,9 @@ class Random(ReplacementPolicy):
 		old_block = tmp.pop(position)
 		tmp.insert(position, block)
 
-		info('Removido bloco %s para inserir o bloco %s', old_block, block)
+		Random.__logger.info(
+			'Removido bloco %s para inserir o bloco %s', old_block, block
+		)
 		return tmp
 
 	@staticmethod
@@ -64,10 +68,12 @@ class Random(ReplacementPolicy):
 
 		for i in range(len(blocks)):
 			if not blocks[i].valid:
-				debug('Bloco inválido encontrado na posição %s', i)
+				Random.__logger.debug(
+					'Bloco inválido encontrado na posição %s', i
+				)
 				return i
 
 		random_index = randint(a=0, b=len(blocks) - 1)
-		debug('Índice aleatório gerado: %s', random_index)
+		Random.__logger.debug('Índice aleatório gerado: %s', random_index)
 
 		return random_index
