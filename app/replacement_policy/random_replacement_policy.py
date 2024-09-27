@@ -45,8 +45,8 @@ class Random(ReplacementPolicy):
 
 		position = Random.__get_index(blocks=blocks)
 
-		old_block = tmp.pop(__index=position)
-		tmp.insert(__index=position, __object=block)
+		old_block = tmp.pop(position)
+		tmp.insert(position, block)
 
 		info('Removido bloco %s para inserir o bloco %s', old_block, block)
 		return tmp

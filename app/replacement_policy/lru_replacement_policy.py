@@ -39,12 +39,12 @@ class LRU(ReplacementPolicy):
 
 		if block in tmp:
 			info('Bloco %s já existe no conjunto', block)
-			tmp.remove(__value=block)
-			tmp.append(__object=block)
+			tmp.remove(block)
+			tmp.append(block)
 			return tmp
 
-		old_block = tmp.pop(__index=0)
-		tmp.append(__object=block)
+		old_block = tmp.pop(0)
+		tmp.append(block)
 
 		info('Removido bloco %s para inserir o bloco %s', old_block, block)
 		return tmp

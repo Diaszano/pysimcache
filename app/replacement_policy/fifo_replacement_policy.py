@@ -42,8 +42,8 @@ class FIFO(ReplacementPolicy):
 			info('Bloco %s já existe no conjunto', block)
 			return tmp
 
-		old_block = tmp.pop(__index=0)
-		tmp.append(__object=block)
+		old_block = tmp.pop(0)
+		tmp.append(block)
 
 		info('Removido bloco %s para inserir o bloco %s', old_block, block)
 		return tmp
