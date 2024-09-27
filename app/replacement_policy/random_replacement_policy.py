@@ -28,11 +28,16 @@ class Random(ReplacementPolicy):
 			len(blocks),
 			block,
 		)
+
 		tmp = blocks.copy()
+
+		if not block.valid:
+			warning('O bloco %s é inválido', block)
+			return tmp
 
 		if len(tmp) == 0:
 			warning(msg='Conjunto de blocos está vazio')
-			return []
+			return tmp
 
 		if block in tmp:
 			info('Bloco %s já existe no conjunto', block)
@@ -40,8 +45,8 @@ class Random(ReplacementPolicy):
 
 		position = Random.__get_index(blocks=blocks)
 
-		old_block = tmp[position]
-		tmp[position] = block
+		old_block = tmp.pop(__index=position)
+		tmp.insert(__index=position, __object=block)
 
 		info('Removido bloco %s para inserir o bloco %s', old_block, block)
 		return tmp
