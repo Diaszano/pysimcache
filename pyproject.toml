@@ -24,7 +24,10 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.taskipy.tasks]
+pre_test = "task check"
 test = "python -m unittest discover -v -s tests"
+check = "ruff check"
+format = "ruff format && ruff check --fix"
 
 [tool.ruff]
 line-length = 80
