@@ -25,6 +25,9 @@ class Block:
 		Returns:
 			bool: Verdadeiro se os dois blocos forem iguais.
 		"""
+		if not isinstance(other, Block):
+			return NotImplemented
+
 		return self.tag == other.tag and self.valid == other.valid
 
 	def __gt__(self: 'Block', other: 'Block') -> bool:
@@ -37,6 +40,9 @@ class Block:
 		Returns:
 			bool: Verdadeiro se o presente for maior que outro.
 		"""
+		if not isinstance(other, Block):
+			return NotImplemented
+
 		return self.tag > other.tag
 
 	def __lt__(self: 'Block', other: 'Block') -> bool:
@@ -49,6 +55,9 @@ class Block:
 		Returns:
 			bool: Verdadeiro se o presente for menor que outro.
 		"""
+		if not isinstance(other, Block):
+			return NotImplemented
+
 		return self.tag < other.tag
 
 	def __ge__(self: 'Block', other: 'Block') -> bool:
@@ -61,6 +70,9 @@ class Block:
 		Returns:
 			bool: Verdadeiro se o presente for maior ou igual a outro.
 		"""
+		if not isinstance(other, Block):
+			return NotImplemented
+
 		return self.tag >= other.tag
 
 	def __le__(self: 'Block', other: 'Block') -> bool:
@@ -73,6 +85,9 @@ class Block:
 		Returns:
 			bool: Verdadeiro se o presente for menor ou igual a outro.
 		"""
+		if not isinstance(other, Block):
+			return NotImplemented
+
 		return self.tag <= other.tag
 
 	def __ne__(self: 'Block', other: 'Block') -> bool:
@@ -85,6 +100,9 @@ class Block:
 		Returns:
 			bool: Verdadeiro se os dois blocos forem diferentes.
 		"""
+		if not isinstance(other, Block):
+			return NotImplemented
+
 		return not self == other
 
 	def __str__(self: 'Block') -> str:
