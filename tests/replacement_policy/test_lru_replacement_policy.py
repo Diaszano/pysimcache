@@ -1,92 +1,171 @@
 from random import randint, sample
 from unittest import TestCase
 
-from app.replacement_policy.lru_replacement_policy import LRUReplacementPolicy
+from app.cache import Block
+from app.replacement_policy import LRU
 
 
 class TestLRUReplacementPolicy(TestCase):
-	"""Testa a classe LRUReplacementPolicy, que implementa a política de substituição LRU (Least Recently Used)."""  # noqa: E501
-
-	def test_add_new_element_to_non_empty_list(
+	def test_empty_set_with_nonexistent_block(
 		self: 'TestLRUReplacementPolicy',
 	) -> None:
 		"""
-		Testa se ao adicionar um novo elemento a uma lista não vazia, a lista mantém o tamanho correto.
+		Testa a adição de um bloco em um conjunto vazio.
 
-		Verifica se o novo elemento é adicionado e o tamanho da lista continua o mesmo,
-		removendo o elemento menos recentemente usado se necessário.
-		"""  # noqa: E501
-		block = sample(range(10), k=5)
-		new_number = randint(10, 20)
+		Verifica:
+		- Se o bloco não é adicionado, pois o tamanho máximo é zero.
+		- Se o comprimento da lista permanece o mesmo.
+		"""
+		block = Block(valid=True, tag=randint(a=1, b=5))
+		blocks: list[Block] = []
 
-		result = LRUReplacementPolicy.add(block=block, new=new_number)
+		result = LRU.add(blocks=blocks, block=block)
 
-		self.assertIn(new_number, result)
-		self.assertEqual(len(result), len(block))
+		self.assertNotIn(member=block, container=result)
+		self.assertEqual(first=len(blocks), second=len(result))
 
-	def test_add_existing_element_to_list(
+	def test_single_block_addition(self: 'TestLRUReplacementPolicy') -> None:
+		"""
+		Testa a adição de um bloco em um conjunto com um único bloco.
+
+		Verifica:
+		- Se o novo bloco é adicionado ao conjunto.
+		- Se o comprimento do conjunto permanece igual.
+		"""
+		block = Block(valid=True, tag=randint(a=1, b=5))
+		blocks = [Block(valid=True, tag=randint(a=6, b=10))]
+
+		result = LRU.add(blocks=blocks, block=block)
+
+		self.assertIn(member=block, container=result)
+		self.assertEqual(first=len(blocks), second=len(result))
+
+	def test_adding_existing_block(self: 'TestLRUReplacementPolicy') -> None:
+		"""
+		Testa a adição de um bloco que já está presente no conjunto.
+
+		Verifica:
+		- Se o novo bloco permanece no conjunto.
+		- Se o comprimento do conjunto permanece igual.
+		- Se o bloco vai para o início da fila.
+		"""
+		block = Block(valid=True, tag=randint(a=1, b=5))
+		blocks = [block, Block(valid=True, tag=randint(a=6, b=10))]
+
+		result = LRU.add(blocks=blocks, block=block)
+
+		self.assertIn(member=block, container=result)
+		self.assertEqual(first=len(result), second=len(blocks))
+		self.assertEqual(first=block, second=result[-1])
+
+	def test_three_blocks_replacement(
 		self: 'TestLRUReplacementPolicy',
 	) -> None:
 		"""
-		Testa se ao adicionar um elemento já existente na lista, o tamanho da lista permanece o mesmo.
+		Testa a substituição FIFO quando há três blocos no conjunto.
 
-		Verifica se o elemento é movido para o início da lista, mantendo o tamanho original.
-		"""  # noqa: E501
-		block = sample(range(10), k=5)
-		existing_number = block[randint(0, 4)]
-
-		result = LRUReplacementPolicy.add(block=block, new=existing_number)
-
-		self.assertIn(existing_number, result)
-		self.assertEqual(len(result), len(block))
-		self.assertEqual(result[0], existing_number)
-
-	def test_add_element_to_empty_list(
-		self: 'TestLRUReplacementPolicy',
-	) -> None:
+		Verifica:
+		- Se o novo bloco está presente na lista.
+		- Se o bloco mais antigo foi removido.
+		- Se o comprimento do conjunto permanece igual.
+		- Se o novo bloco está na posição correta (primeiro na lista).
 		"""
-		Testa se ao adicionar um novo elemento em uma lista vazia, o tamanho da lista se torna 1.
+		block = Block(valid=True, tag=randint(a=10, b=20))
 
-		Verifica se o novo elemento é corretamente adicionado à lista que estava vazia.
-		"""  # noqa: E501
-		block = []
-		new_number = randint(10, 20)
+		blocks = [
+			Block(valid=True, tag=tag)
+			for tag in sample(population=range(10), k=3)
+		]
 
-		result = LRUReplacementPolicy.add(block=block, new=new_number)
+		result = LRU.add(blocks=blocks, block=block)
 
-		self.assertEqual(len(result), 1)
-		self.assertIn(new_number, result)
+		self.assertIn(member=block, container=result)
+		self.assertNotIn(member=blocks[0], container=result)
+		self.assertEqual(first=len(result), second=len(blocks))
+		self.assertEqual(first=block, second=result[-1])
 
-	def test_repeated_element_moves_to_front(
-		self: 'TestLRUReplacementPolicy',
-	) -> None:
+	def test_adding_invalid_block(self: 'TestLRUReplacementPolicy') -> None:
 		"""
-		Testa se um elemento repetido é movido para o início da lista.
+		Testa a adição de um bloco inválido ao conjunto.
 
-		Verifica se a política LRU move o elemento recém-utilizado para o topo da lista.
-		"""  # noqa: E501
-		block = sample(range(10), k=randint(2, 5))
-		repeated_number = block[randint(0, len(block) - 1)]
-
-		result = LRUReplacementPolicy.add(block=block, new=repeated_number)
-
-		self.assertIn(repeated_number, result)
-		self.assertEqual(result[0], repeated_number)
-		self.assertEqual(len(result), len(block))
-
-	def test_oldest_element_removed_when_list_is_full(
-		self: 'TestLRUReplacementPolicy',
-	) -> None:
+		Verifica:
+		- Se o bloco inválido não é adicionado ao conjunto.
+		- Se o comprimento do conjunto permanece o mesmo.
 		"""
-		Testa se o elemento mais antigo é removido quando a lista atinge seu tamanho máximo.
+		invalid_block = Block(valid=False, tag=randint(a=1, b=5))
+		blocks = [Block(valid=True, tag=randint(a=6, b=10))]
 
-		Verifica se, ao adicionar um novo elemento a uma lista cheia, o elemento menos recentemente usado é removido.
-		"""  # noqa: E501
-		block = sample(range(10), k=randint(2, 5))
-		new_number = randint(10, 20)
+		result = LRU.add(blocks=blocks, block=invalid_block)
 
-		result = LRUReplacementPolicy.add(block=block, new=new_number)
+		self.assertNotIn(member=invalid_block, container=result)
+		self.assertEqual(first=len(blocks), second=len(result))
 
-		self.assertNotIn(block[-1], result)
-		self.assertIn(new_number, result)
-		self.assertEqual(len(result), len(block))
+	def test_complete_replacement(self: 'TestLRUReplacementPolicy') -> None:
+		"""
+		Testa a substituição completa dos blocos no conjunto.
+
+		Adiciona blocos novos até que todos os blocos iniciais sejam
+		substituídos.
+
+		Verifica:
+		- Se os novos blocos estão presentes no conjunto.
+		- Se nenhum bloco inicial permanece no conjunto.
+		"""
+		capacity = randint(a=3, b=9)
+
+		blocks = [
+			Block(valid=True, tag=tag)
+			for tag in sample(population=range(10), k=capacity)
+		]
+
+		new_blocks = [
+			Block(valid=True, tag=tag + 10)
+			for tag in sample(population=range(10), k=capacity)
+		]
+
+		result = blocks.copy()
+
+		for block in new_blocks:
+			result = LRU.add(blocks=result, block=block)
+
+		self.assertEqual(first=len(result), second=capacity)
+
+		for block in blocks:
+			self.assertNotIn(member=block, container=result)
+
+	def test_if_the_order_is_correct(self: 'TestLRUReplacementPolicy') -> None:
+		"""
+		Testa a ordem dos blocos no conjunto.
+
+		Adiciona os mesmos blocos no conjunto para testar a função do LRU
+
+		Verifica:
+		- Se os blocos estão ordenados no conjunto.
+		"""
+
+		blocks = [
+			Block(valid=True, tag=tag)
+			for tag in sample(population=range(10), k=3)
+		]
+
+		new_blocks = [
+			blocks[1],
+			blocks[1],
+			blocks[2],
+			blocks[0],
+			blocks[0],
+			blocks[2],
+		]
+
+		expected_blocks = [
+			blocks[1],
+			blocks[0],
+			blocks[2],
+		]
+
+		result = blocks.copy()
+
+		for block in new_blocks:
+			result = LRU.add(blocks=result, block=block)
+
+		self.assertEqual(first=result, second=expected_blocks)
