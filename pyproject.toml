@@ -18,6 +18,7 @@ typer = "^0.12.5"
 taskipy = "^1.13.0"
 ruff = "^0.6.3"
 pre-commit = "^3.8.0"
+coverage = "^7.6.1"
 
 [build-system]
 requires = ["poetry-core"]
@@ -25,7 +26,8 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.taskipy.tasks]
 pre_test = "task check"
-test = "python -m unittest discover -v -s tests"
+test = "python -m coverage run -m unittest discover -v -s tests"
+post_test = "python -m coverage report -m"
 check = "ruff check"
 format = "ruff format && ruff check --fix"
 
