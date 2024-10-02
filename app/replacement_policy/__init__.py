@@ -1,11 +1,11 @@
-from .fifo_replacement_policy import FIFOReplacementPolicy
-from .lru_replacement_policy import LRUReplacementPolicy
-from .random_replacement_policy import RandomReplacementPolicy
+from .fifo_replacement_policy import FIFO
+from .lru_replacement_policy import LRU
+from .random_replacement_policy import Random
 from .replacement_policy_types import ReplacementPolicyType
 
 __all__ = (
-	'FIFOReplacementPolicy',
-	'LRUReplacementPolicy',
-	'RandomReplacementPolicy',
+	'FIFO',
+	'LRU',
+	'Random',
 	'ReplacementPolicyType',
 )

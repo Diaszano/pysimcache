@@ -1,36 +1,54 @@
+from logging import getLogger
+
+from app.cache import Block
+
 from .replacement_policy import ReplacementPolicy
 
 
-class LRUReplacementPolicy(ReplacementPolicy):
+class LRU(ReplacementPolicy):
 	"""Implementa a política de substituição LRU (Least Recently Used).
-	O elemento menos recentemente utilizado é removido quando a lista atinge seu limite.
+
+	O bloco menos recentemente utilizado no conjunto é removido quando o conjunto atinge seu limite.
 	"""  # noqa: E501
 
+	__logger = getLogger(name=__name__)
+
 	@staticmethod
-	def add(block: list[any], new: any) -> list[any]:
-		"""Adiciona um novo elemento à lista usando a política LRU.
+	def add(blocks: list[Block], block: Block) -> list[Block]:
+		"""Adiciona um bloco ao conjunto seguindo a política de substituição LRU.
 
-		Se a lista estiver vazia, o novo elemento será o único na lista.
-		Se o elemento já estiver na lista, ele será removido de sua posição original e movido para o início da lista, representando o uso recente.
-		Se a lista estiver cheia e o elemento for novo, o elemento menos recentemente utilizado (último da lista) será removido e o novo será adicionado ao início.
-
-		Args:
-		----
-			block (list[any]): A lista de elementos atuais.
-			new (any): O novo elemento a ser adicionado.
-
+		Params:
+			blocks (list[Block]): Conjunto de blocos existente.
+			block (Block): Bloco a ser adicionado.
 		Returns:
-		-------
-			list[any]: A nova lista após aplicar a política de substituição LRU.
-
+			list[Block]: Conjunto de blocos atualizado.
 		"""  # noqa: E501
-		tmp = block.copy()
+		LRU.__logger.debug(
+			'Aplicando política de substituição LRU em conjunto com '
+			'%s blocos para adicionar o bloco %s',
+			len(blocks),
+			block,
+		)
+		tmp = blocks.copy()
+
+		if not block.valid:
+			LRU.__logger.warning('O bloco %s é inválido', block)
+			return tmp
 
 		if len(tmp) == 0:
-			return [new]
+			LRU.__logger.warning(msg='Conjunto de blocos está vazio')
+			return tmp
 
-		if new in tmp:
-			tmp.remove(new)
-			return [new] + tmp[:]
+		if block in tmp:
+			LRU.__logger.info('Bloco %s já existe no conjunto', block)
+			tmp.remove(block)
+			tmp.append(block)
+			return tmp
 
-		return [new] + tmp[: len(tmp) - 1]
+		old_block = tmp.pop(0)
+		tmp.append(block)
+
+		LRU.__logger.info(
+			'Removido bloco %s para inserir o bloco %s', old_block, block
+		)
+		return tmp

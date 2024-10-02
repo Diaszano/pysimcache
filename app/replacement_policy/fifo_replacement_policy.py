@@ -1,35 +1,53 @@
+from logging import getLogger
+
+from app.cache import Block
+
 from .replacement_policy import ReplacementPolicy
 
 
-class FIFOReplacementPolicy(ReplacementPolicy):
+class FIFO(ReplacementPolicy):
 	"""Implementa a política de substituição FIFO (First-In, First-Out).
-	O elemento mais antigo na lista é removido quando a lista atinge seu limite.
-	"""
+
+	O bloco mais antigo no conjunto é removido quando o conjunto atinge seu limite.
+	"""  # noqa: E501
+
+	__logger = getLogger(name=__name__)
 
 	@staticmethod
-	def add(block: list[any], new: any) -> list[any]:
-		"""Adiciona um novo elemento à lista usando a política FIFO.
+	def add(blocks: list[Block], block: Block) -> list[Block]:
+		"""Adiciona um bloco ao conjunto seguindo a política de substituição FIFO.
 
-		Se a lista estiver vazia, o novo elemento será o único da lista.
-		Se o elemento já estiver na lista, a lista não será alterada.
-		Se a lista estiver cheia, o elemento mais antigo será removido e o novo será adicionado ao início da lista.
-
-		Args:
-		----
-			block (list[any]): A lista de elementos atuais.
-			new (any): O novo elemento a ser adicionado.
-
+		Params:
+			blocks (list[Block]): Conjunto de blocos existente.
+			block (Block): Bloco a ser adicionado.
 		Returns:
-		-------
-			list[any]: A nova lista após aplicar a política de substituição.
-
+			list[Block]: Conjunto de blocos atualizado.
 		"""  # noqa: E501
-		tmp = block.copy()
+		FIFO.__logger.debug(
+			'Aplicando política de substituição FIFO em conjunto com '
+			'%s blocos para adicionar o bloco %s',
+			len(blocks),
+			block,
+		)
 
-		if len(tmp) == 0:
-			return [new]
+		tmp = blocks.copy()
 
-		if new in tmp:
+		if not block.valid:
+			FIFO.__logger.warning('O bloco %s é inválido', block)
 			return tmp
 
-		return [new] + tmp[: len(tmp) - 1]
+		if len(tmp) == 0:
+			FIFO.__logger.warning(msg='Conjunto de blocos está vazio')
+			return tmp
+
+		if block in tmp:
+			FIFO.__logger.info('Bloco %s já existe no conjunto', block)
+			return tmp
+
+		old_block = tmp.pop(0)
+		tmp.append(block)
+
+		FIFO.__logger.info(
+			'Removido bloco %s para inserir o bloco %s', old_block, block
+		)
+		return tmp

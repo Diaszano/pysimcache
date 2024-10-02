@@ -24,7 +24,10 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.taskipy.tasks]
+pre_test = "task check"
 test = "python -m unittest discover -v -s tests"
+check = "ruff check"
+format = "ruff format && ruff check --fix"
 
 [tool.ruff]
 line-length = 80
@@ -48,7 +51,6 @@ select = [
     "E",
     "F",
     "FA",
-    "FBT",
     "FURB",
     "G",
     "I",
@@ -73,7 +75,7 @@ select = [
 ignore = [
     "COM812",
     "PLR0913",
-    "W191",
+    "W191"
 ]
 
 [tool.ruff.lint.pycodestyle]

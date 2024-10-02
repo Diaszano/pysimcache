@@ -10,6 +10,6 @@ class ReplacementPolicyType(str, Enum):
 		- 'L' para substituição LRU (Least Recently Used).
 	"""
 
-	random = 'R'
-	fifo = 'F'
-	lru = 'L'
+	RANDOM = 'R'
+	FIFO = 'F'
+	LRU = 'L'
