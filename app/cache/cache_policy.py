@@ -1,17 +1,28 @@
 from app.cache import Block
-from app.replacement_policy import Random
+from app.replacement_policy import Random, LRU, FIFO, ReplacementPolicyType
 
-
-def process_random_policy(assoc, tag, cache_val, cache_tag):
-    # Cria uma lista de blocos a partir dos valores da cache
-    blocks = [Block(valid=bool(cache_val[j]), tag=cache_tag[j]) for j in range(assoc)]
+def process_policy(assoc, policy, tag, indice, cache_val, cache_tag):
+    # Cria uma lista de blocos a partir dos valores da cache para o conjunto específico
+    blocks = [
+        Block(valid=bool(cache_val[indice * assoc + j]), tag=cache_tag[indice * assoc + j]) for j in range(assoc)
+    ]
     # Cria um novo bloco com a tag fornecida
     new_block = Block(valid=True, tag=tag)
-    # Aplica a política de substituição Random
-    updated_blocks = Random.add(blocks, new_block)
-    # Atualiza os valores da cache com os blocos atualizados
+
+    # Mapeia as políticas de substituição às suas respectivas funções
+    policy_map = {
+        ReplacementPolicyType.RANDOM: Random.add,
+        ReplacementPolicyType.FIFO: FIFO.add,
+        ReplacementPolicyType.LRU: LRU.add
+    }
+
+    # Aplica a política de substituição
+    updated_blocks = policy_map[policy](blocks, new_block)
+
+    # Atualiza os valores da cache com os blocos atualizados para o conjunto específico
     for j in range(assoc):
-        cache_val[j] = 1 if updated_blocks[j].valid else 0
-        cache_tag[j] = updated_blocks[j].tag if updated_blocks[j].valid else cache_tag[j]
+        idx = indice * assoc + j
+        cache_val[idx] = 1 if updated_blocks[j].valid else 0
+        cache_tag[idx] = updated_blocks[j].tag if updated_blocks[j].valid else cache_tag[idx]
 
     return cache_val, cache_tag
