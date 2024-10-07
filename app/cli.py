@@ -1,7 +1,7 @@
 from typer import Argument, Typer
 from typing_extensions import Annotated
 
-from .cache import Mapeamentos
+from .cache import CacheMapping
 from .file import File
 from .replacement_policy import ReplacementPolicyType
 
@@ -16,32 +16,33 @@ def simular_cache(
 	assoc: Annotated[int, Argument(min=0)],
 	policy: ReplacementPolicyType,
 	output: Annotated[int, Argument(min=0, max=1)],
-	arquivo: str,
+	file_name: str,
 ) -> None:
 	# Inicializando os contadores
 
 	# Código principal da função simular_cache
-	exibir_parametros(
-		nsets, bsize, assoc, policy, output, arquivo
+	print_cache_parameters(
+		nsets, bsize, assoc, policy, output, file_name
 	)  # TIRAR DEPOIS
 
-	enderecos = File.read_bin_file('address/' + arquivo)
-	# print(enderecos)
+	file_addresses = File.read_bin_file('address/' + file_name)
 
-	cache = Mapeamentos()
-	cache.mapeamento(enderecos, nsets, bsize, assoc, policy)
+	cache = CacheMapping()
+	cache.mapping(file_addresses, nsets, bsize, assoc, policy)
 
-	exibir_resultados(
+	print_results(
 		cache.hits,
 		cache.misses,
-		cache.miss_compulsorio,
-		cache.miss_capacidade,
-		cache.miss_conflito,
+		cache.miss_compulsory,
+		cache.miss_capacity,
+		cache.miss_conflict,
 		output,
 	)
 
 
-def exibir_parametros(nsets, bsize, assoc, policy, output, arquivo) -> None:
+def print_cache_parameters(
+	nsets, bsize, assoc, policy, output, arquivo
+) -> None:
 	print(
 		f'nsets: {nsets}\n'
 		+ f'bsize: {bsize}\n'
@@ -52,7 +53,7 @@ def exibir_parametros(nsets, bsize, assoc, policy, output, arquivo) -> None:
 	)
 
 
-def exibir_resultados(
+def print_results(
 	hits, misses, miss_compulsorio, miss_capacidade, miss_conflito, output
 ) -> None:
 	if output == 0:
