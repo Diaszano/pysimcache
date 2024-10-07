@@ -80,11 +80,15 @@ Certifique-se de ter o [Python 3.12](https://www.python.org/) e o [Poetry](https
     ```bash
     poetry shell
     ```
-4. Compile o projeto:
+4. Instale as dependências
+    ```bash
+    poetry install
+    ```
+5. Compile o projeto:
     ```bash
     poetry build
     ```
-5. Execute o simulador:
+6. Execute o simulador:
    ```bash
    cache_simulator <nsets> <bsize> <assoc> <substituição> <flag_saida> <arquivo_de_entrada>
    ```
