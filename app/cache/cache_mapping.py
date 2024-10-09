@@ -16,7 +16,7 @@ class Mapping:
 
 	A classe gerencia os acertos (hits) e diferentes tipos de erros de cache (misses)
 	durante a simulação do mapeamento de endereços.
-	"""
+	"""  # noqa: E501
 
 	__logger = getLogger(name=__name__)
 

@@ -50,7 +50,7 @@ class Set:
 		Retorna uma representação string da instância do conjunto para fins de depuração.
 
 		:return: Representação string da instância para fins de depuração.
-		"""
+		"""  # noqa: E501
 		return repr(self.__blocks)
 
 	def __str__(self: 'Set') -> str:
