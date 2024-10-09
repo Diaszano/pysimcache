@@ -1,5 +1,6 @@
 from app.cache import Block
-from app.replacement_policy import FIFO, LRU, Random, ReplacementPolicyType
+from .cache_set import Set
+from app.replacement_policy import ReplacementPolicyType
 
 def process_policy(assoc, policy, tag, index, cache_val, cache_tag):
     """
@@ -16,52 +17,38 @@ def process_policy(assoc, policy, tag, index, cache_val, cache_tag):
     Returns:
         tuple: Tupla contendo as listas atualizadas de valores de validade e tags da cache.
     """
-    blocks = create_blocks(assoc, index, cache_val, cache_tag)
+    cache_set = create_set(assoc, index, cache_val, cache_tag, policy)
     new_block = Block(valid=True, tag=tag)
-    updated_blocks = select_policy(policy, blocks, new_block)
-    update_cache_values(assoc, index, updated_blocks, cache_val, cache_tag)
+    cache_set.add_block(new_block)
+    update_cache_values(assoc, index, cache_set.get_blocks(), cache_val, cache_tag)
     return cache_val, cache_tag
 
-def create_blocks(assoc, index, cache_val, cache_tag):
+def create_set(assoc, index, cache_val, cache_tag, policy):
     """
-    Cria uma lista de blocos a partir dos valores da cache para o conjunto específico.
+    Cria um conjunto de blocos a partir dos valores da cache para o conjunto específico.
 
     Args:
         assoc (int): Número de vias associativas.
         index (int): Índice do conjunto na cache.
         cache_val (list): Lista de valores de validade da cache.
         cache_tag (list): Lista de tags da cache.
+        policy (ReplacementPolicyType): Política de substituição a ser aplicada.
 
     Returns:
-        list: Lista de blocos do conjunto específico.
+        Set: Conjunto de blocos do conjunto específico.
     """
-    return [
+    # Cria o conjunto usando a política diretamente
+    cache_set = Set(assoc, policy)
+    blocks = [
         Block(
             valid=bool(cache_val[index * assoc + j]),
             tag=cache_tag[index * assoc + j],
         )
         for j in range(assoc)
     ]
-
-def select_policy(policy, blocks, new_block):
-    """
-    Seleciona e aplica a política de substituição de cache.
-
-    Args:
-        policy (ReplacementPolicyType): Política de substituição a ser aplicada.
-        blocks (list): Lista de blocos existentes no conjunto.
-        new_block (Block): Novo bloco a ser adicionado.
-
-    Returns:
-        list: Lista de blocos atualizada após a aplicação da política de substituição.
-    """
-    if policy == ReplacementPolicyType.RANDOM:
-        return Random.add(blocks, new_block)
-    if policy == ReplacementPolicyType.FIFO:
-        return FIFO.add(blocks, new_block)
-    if policy == ReplacementPolicyType.LRU:
-        return LRU.add(blocks, new_block)
-    return blocks
+    for block in blocks:
+        cache_set.add_block(block)
+    return cache_set
 
 def update_cache_values(assoc, index, updated_blocks, cache_val, cache_tag):
     """

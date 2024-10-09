@@ -1,31 +1,51 @@
 from typing import Type
 
 from app.replacement_policy.random_replacement_policy import ReplacementPolicy
-
 from .cache_block import Block
+from ..replacement_policy import ReplacementPolicyType, LRU, FIFO, Random
 
+Policies = ReplacementPolicyType
 Policy = Type[ReplacementPolicy]
-
 
 class Set:
 	"""
 	Representa um conjunto de blocos da cache.
 	"""
 
-	def __init__(self: 'Set', assoc: int, policy: Policy) -> None:
+	def __init__(self: 'Set', assoc: int, policy: Policies) -> None:
 		"""
 		Inicializa o conjunto de blocos.
 
 		Args:
 			assoc (int): Número associativo do conjunto.
-			policy (Type[ReplacementPolicy]): Política de substituição a ser utilizada.
+			policy (Policies): Política de substituição a ser utilizada.
 
 		Returns:
 			None
-		"""  # noqa: E501
+		"""
 		self.__assoc = assoc
-		self.__policy = policy
 		self.__blocks = [Block() for _ in range(self.__assoc)]
+		self.__policy = self.create_policy(policy)  # Cria a instância da política
+
+	@staticmethod
+	def create_policy(policy_type: Policies) -> ReplacementPolicy:
+		"""
+		Cria uma instância da política de substituição correspondente ao tipo fornecido.
+
+		Args:
+			policy_type (Policies): Tipo da política de substituição.
+
+		Returns:
+			ReplacementPolicy: Instância da política de substituição.
+		"""
+		if policy_type == ReplacementPolicyType.RANDOM:
+			return Random()  # Retorna uma instância de Random
+		elif policy_type == ReplacementPolicyType.FIFO:
+			return FIFO()  # Retorna uma instância de FIFO
+		elif policy_type == ReplacementPolicyType.LRU:
+			return LRU()  # Retorna uma instância de LRU
+		else:
+			raise ValueError("Invalid replacement policy type")
 
 	def get_blocks(self: 'Set') -> list[Block]:
 		"""
@@ -63,7 +83,7 @@ class Set:
 
 		Returns:
 			str: Representação string da instância para fins de depuração.
-		"""  # noqa: E501
+		"""
 		return repr(self.__blocks)
 
 	def __str__(self: 'Set') -> str:
