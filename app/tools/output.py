@@ -70,7 +70,7 @@ class Output:
 		miss_conflict_rate = miss_conflict / misses
 
 		if output == OutputType.STANDARD:
-			msg = '%s %.4f %.4f %.4f %.4f %.4f' % (
+			msg = '%s %.4f %.4f %.2f %.2f %.2f' % (
 				access,
 				hits_rate,
 				misses_rate,
@@ -84,9 +84,9 @@ class Output:
 				'Números de acessos: \t%s\n'
 				'Taxa de acertos (hit): \t%.4f | %.2f%%\n'
 				'Taxa de erros (miss): \t%.4f | %.2f%%\n\t'
-				'Compulsórios: \t%.4f | %.2f%%\n\t'
-				'Capacidade: \t%.4f | %.2f%%\n\t'
-				'Conflito: \t%.4f | %.2f%%'
+				'Compulsórios: \t%.2f | %.2f%%\n\t'
+				'Capacidade: \t%.2f | %.2f%%\n\t'
+				'Conflito: \t%.2f | %.2f%%'
 			) % (
 				access,
 				hits_rate,
