@@ -1,10 +1,8 @@
-from typing import Type
-
-from app.replacement_policy.random_replacement_policy import ReplacementPolicy
+from app.replacement_policy import ReplacementPolicy
 
 from .cache_block import Block
 
-Policy = Type[ReplacementPolicy]
+Policy = type[ReplacementPolicy]
 
 
 class Set:
@@ -16,23 +14,18 @@ class Set:
 		"""
 		Inicializa o conjunto de blocos.
 
-		Args:
-			assoc (int): Número associativo do conjunto.
-			policy (Type[ReplacementPolicy]): Política de substituição a ser utilizada.
-
-		Returns:
-			None
-		"""  # noqa: E501
+		:param assoc: Número associativo do conjunto.
+		:param policy: Política de substituição a ser utilizada.
+		"""
 		self.__assoc = assoc
-		self.__policy = policy
 		self.__blocks = [Block() for _ in range(self.__assoc)]
+		self.__policy = policy
 
 	def get_blocks(self: 'Set') -> list[Block]:
 		"""
 		Retorna os blocos associados ao conjunto.
 
-		Returns:
-			list[Block]: Lista de blocos associadas.
+		:return: Lista de blocos associadas.
 		"""
 		return self.__blocks
 
@@ -40,11 +33,7 @@ class Set:
 		"""
 		Adiciona um novo bloco ao conjunto, substituindo outros se necessário.
 
-		Args:
-			block (Block): O bloco a ser adicionado.
-
-		Returns:
-			None
+		:param block: O bloco a ser adicionado.
 		"""
 		self.__blocks = self.__policy.add(blocks=self.__blocks, block=block)
 
@@ -52,8 +41,7 @@ class Set:
 		"""
 		Retorna o número de blocos no conjunto.
 
-		Returns:
-			int: Número de blocos no conjunto
+		:return: Número de blocos no conjunto
 		"""
 		return len(self.__blocks)
 
@@ -61,16 +49,14 @@ class Set:
 		"""
 		Retorna uma representação string da instância do conjunto para fins de depuração.
 
-		Returns:
-			str: Representação string da instância para fins de depuração.
-		"""  # noqa: E501
+		:return: Representação string da instância para fins de depuração.
+		"""
 		return repr(self.__blocks)
 
 	def __str__(self: 'Set') -> str:
 		"""
 		Retorna uma representação string da instância do conjunto.
 
-		Returns:
-			str: Representação string da instância.
+		:return: Representação string da instância.
 		"""
 		return str(self.__blocks)

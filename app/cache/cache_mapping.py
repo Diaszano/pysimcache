@@ -1,177 +1,113 @@
+from logging import getLogger
 from math import log2
 
-from .cache_policy import process_policy
+from app.replacement_policy import ReplacementPolicy
+
+from .cache_block import Block
+from .cache_set import Set
+
+Policy = type[ReplacementPolicy]
 
 
-class CacheMapping:
+class Mapping:
 	"""
-	Classe para gerenciar o mapeamento de cache e calcular hits e misses.
+	Classe responsável por realizar o mapeamento de endereços de memória
+	em um cache com múltiplos conjuntos (sets) e associatividade.
 
-	Attributes:
-	    hits (int): Número de hits na cache.
-	    misses (int): Número de misses na cache.
-	    miss_compulsory (int): Número de misses compulsórios.
-	    miss_capacity (int): Número de misses de capacidade.
-	    miss_conflict (int): Número de misses de conflito.
-	    cache_val (np.ndarray): Array de valores de validade da cache.
-	    cache_tag (np.ndarray): Array de tags da cache.
-	    nbits_offset (int): Número de bits para o offset.
-	    nbits_index (int): Número de bits para o índice.
-	    nbits_tag (int): Número de bits para a tag.
+	A classe gerencia os acertos (hits) e diferentes tipos de erros de cache (misses)
+	durante a simulação do mapeamento de endereços.
 	"""
+
+	__logger = getLogger(name=__name__)
 
 	def __init__(
-		self,
-		hits: int = 0,
-		misses: int = 0,
-		miss_compulsory: int = 0,
-		miss_capacity: int = 0,
-		miss_conflict: int = 0,
+		self: 'Mapping',
+		nsets: int,
+		bsize: int,
+		assoc: int,
+		policy: Policy,
 	) -> None:
 		"""
-		Inicializa a classe CacheMapping com valores padrão.
+		Inicializa um objeto CacheMapping.
 
-		Args:
-		    hits (int): Número inicial de hits. Default é 0.
-		    misses (int): Número inicial de misses. Default é 0.
-		    miss_compulsory (int): Número inicial de misses compulsórios. Default é 0.
-		    miss_capacity (int): Número inicial de misses de capacidade. Default é 0.
-		    miss_conflict (int): Número inicial de misses de conflito. Default é 0.
+		:param nsets: Número de conjuntos (sets) no cache.
+		:param bsize: Tamanho do bloco de cache em bytes.
+		:param assoc: Grau de associatividade do cache.
+		:param policy: Classe de política de substituição utilizada no cache.
 		"""
-		self.hits = hits
-		self.misses = misses
-		self.miss_compulsory = miss_compulsory
-		self.miss_capacity = miss_capacity
-		self.miss_conflict = miss_conflict
-		self.cache_val = None
-		self.cache_tag = None
-		self.nbits_offset = None
-		self.nbits_index = None
-		self.nbits_tag = None
-
-	def initialize_cache(self, nsets, bsize, assoc):
-		"""
-		Inicializa a cache com os parâmetros fornecidos.
-
-		Args:
-		    nsets (int): Número de conjuntos na cache.
-		    bsize (int): Tamanho do bloco.
-		    assoc (int): Número de vias associativas.
-		"""
-		self.cache_val = [0 for _ in range(nsets * assoc)]
-		self.cache_tag = [0 for _ in range(nsets * assoc)]
+		self.hits = 0
+		self.misses = 0
+		self.miss_compulsory = 0
+		self.miss_capacity = 0
+		self.miss_conflict = 0
+		self.sets = [Set(assoc, policy) for _ in range(nsets)]
 		self.nbits_offset = int(log2(bsize))
 		self.nbits_index = int(log2(nsets))
 		self.nbits_tag = 32 - self.nbits_offset - self.nbits_index
 
-	def mapping(self, memory_addresses, nsets, bsize, assoc, policy):
+	def mapping(
+		self: 'Mapping', memory_addresses: list[int]
+	) -> tuple[int, int, int, int, int]:
 		"""
-		Realiza o mapeamento de cache para os endereços de memória fornecidos.
+		Realiza o mapeamento de uma lista de endereços de memória no cache.
 
-		Args:
-		    memory_addresses (list): Lista de endereços de memória.
-		    nsets (int): Número de conjuntos na cache.
-		    bsize (int): Tamanho do bloco.
-		    assoc (int): Número de vias associativas.
-		    policy (ReplacementPolicyType): Política de substituição a ser aplicada.
+		:param memory_addresses: Lista de endereços de memória a serem mapeados.
+		:return: Resultado do mapeamento da cache.
 		"""
-		self.initialize_cache(nsets, bsize, assoc)
-		for i in memory_addresses:
-			tag = i >> (self.nbits_offset + self.nbits_index)
-			index = (i >> self.nbits_offset) & (2**self.nbits_index - 1)
-			if assoc == 1:
-				self.mapeamento_direto(tag, index)
-			elif nsets == 1:
-				self.totalmente_associativa(tag, index, assoc, policy)
-			else:
-				self.conjunto_associativa(tag, index, nsets, assoc, policy)
+		self.__logger.info(
+			'Iniciando o mapeamento de %s endereços de memória',
+			len(memory_addresses),
+		)
+
+		for address in memory_addresses:
+			tag = address >> (self.nbits_offset + self.nbits_index)
+			idx = (address >> self.nbits_offset) & (2**self.nbits_index - 1)
+			self.__logger.debug(
+				'Endereço %s -> Tag: %s, Índice: %s', address, tag, idx
+			)
+			self.benchmarking(block=Block(valid=True, tag=tag), idx=idx)
+
+		self.__logger.info('Mapeamento concluído')
+
 		self.misses = (
 			self.miss_capacity + self.miss_conflict + self.miss_compulsory
 		)
 
-	def mapeamento_direto(self, tag, index):
-		"""
-		Realiza o mapeamento direto na cache.
-
-		Args:
-		    tag (int): Tag do bloco.
-		    index (int): Índice do conjunto na cache.
-		"""
-		if self.cache_val[index] == 0:
-			self.miss_compulsory += 1
-			self.cache_val[index] = 1
-			self.cache_tag[index] = tag
-		elif self.cache_tag[index] == tag:
-			self.hits += 1
-		else:
-			self.cache_val[index] = 1
-			self.cache_tag[index] = tag
-
-	def totalmente_associativa(self, tag, index, assoc, policy):
-		"""
-		Realiza o mapeamento totalmente associativo na cache.
-
-		Args:
-		    tag (int): Tag do bloco.
-		    index (int): Índice do conjunto na cache.
-		    assoc (int): Número de vias associativas.
-		    policy (ReplacementPolicyType): Política de substituição a ser aplicada.
-		"""
-		flag_hit, flag_compulsory = self.check_cache_mapping(tag, 0, assoc)
-		if not flag_hit and not flag_compulsory:
-			process_policy(
-				assoc, policy, tag, index, self.cache_val, self.cache_tag
-			)
-			self.miss_capacity += 1  # Contabiliza miss de capacidade
-			self.misses += 1
-
-	def conjunto_associativa(self, tag, index, nsets, assoc, policy):
-		"""
-		Realiza o mapeamento conjunto associativo na cache.
-
-		Args:
-		    tag (int): Tag do bloco.
-		    index (int): Índice do conjunto na cache.
-		    nsets (int): Número de conjuntos na cache.
-		    assoc (int): Número de vias associativas.
-		    policy (ReplacementPolicyType): Política de substituição a ser aplicada.
-		"""
-		flag_hit, flag_compulsory = self.check_cache_mapping(
-			tag, index * assoc, (index + 1) * assoc
+		return (
+			self.hits,
+			self.misses,
+			self.miss_compulsory,
+			self.miss_capacity,
+			self.miss_conflict,
 		)
-		cache_size = nsets * assoc
-		if not flag_hit and not flag_compulsory:
-			if self.miss_compulsory == cache_size:
-				self.miss_capacity += 1
-			else:
-				self.miss_conflict += 1
-			self.cache_val, self.cache_tag = process_policy(
-				assoc, policy, tag, index, self.cache_val, self.cache_tag
-			)
 
-	def check_cache_mapping(self, tag, start, end):
+	def number_of_blocks(self: 'Mapping') -> int:
 		"""
-		Verifica o mapeamento da cache para hits e misses compulsórios.
+		Retorna o número total de blocos no cache.
 
-		Args:
-		    tag (int): Tag do bloco.
-		    start (int): Índice inicial do conjunto na cache.
-		    end (int): Índice final do conjunto na cache.
-
-		Returns:
-		    tuple: Tupla contendo flags para hit e miss compulsório.
+		:return: Número de blocos no cache.
 		"""
-		flag_hit = False
-		flag_compulsory = False
-		for i in range(start, end):
-			if self.cache_val[i] == 0:
-				flag_compulsory = True
-				self.miss_compulsory += 1
-				self.cache_val[i] = 1
-				self.cache_tag[i] = tag
-				break
-			if self.cache_tag[i] == tag:
-				flag_hit = True
-				self.hits += 1
-				break
-		return flag_hit, flag_compulsory
+		return len(self.sets) * len(self.sets[0])
+
+	def benchmarking(self: 'Mapping', block: Block, idx: int) -> None:
+		"""
+		Avalia o desempenho do cache verificando se o bloco está presente e
+		atualiza os contadores de hits ou de diferentes tipos de misses.
+
+		:param block: Bloco de cache que está sendo verificado.
+		:param idx: Índice do conjunto (set) onde o bloco deve estar.
+		"""
+		if block in self.sets[idx].get_blocks():
+			self.__logger.info('Hit no bloco %s', block)
+			self.hits += 1
+		elif Block() in self.sets[idx].get_blocks():
+			self.__logger.warning('Miss compulsório no bloco %s', block)
+			self.miss_compulsory += 1
+		elif self.miss_compulsory == self.number_of_blocks():
+			self.__logger.warning('Miss de capacidade no bloco %s', block)
+			self.miss_capacity += 1
+		else:
+			self.__logger.warning('Miss de conflito no bloco %s', block)
+			self.miss_conflict += 1
+
+		self.sets[idx].add_block(block)
