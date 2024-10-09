@@ -1,8 +1,6 @@
-import math
+from math import log2
 
-import numpy as np
-
-from app.cache.cache_policy import process_policy
+from .cache_policy import process_policy
 
 
 class CacheMapping:
@@ -60,10 +58,10 @@ class CacheMapping:
 		    bsize (int): Tamanho do bloco.
 		    assoc (int): Número de vias associativas.
 		"""
-		self.cache_val = np.zeros(nsets * assoc)
-		self.cache_tag = np.zeros(nsets * assoc)
-		self.nbits_offset = int(math.log2(bsize))
-		self.nbits_index = int(math.log2(nsets))
+		self.cache_val = [0 for _ in range(nsets * assoc)]
+		self.cache_tag = [0 for _ in range(nsets * assoc)]
+		self.nbits_offset = int(log2(bsize))
+		self.nbits_index = int(log2(nsets))
 		self.nbits_tag = 32 - self.nbits_offset - self.nbits_index
 
 	def mapping(self, memory_addresses, nsets, bsize, assoc, policy):
@@ -147,7 +145,7 @@ class CacheMapping:
 				self.miss_capacity += 1
 			else:
 				self.miss_conflict += 1
-			process_policy(
+			self.cache_val, self.cache_tag = process_policy(
 				assoc, policy, tag, index, self.cache_val, self.cache_tag
 			)
 
