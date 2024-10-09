@@ -1,82 +1,70 @@
+from logging import DEBUG, basicConfig
+from pathlib import Path
+
 from typer import Argument, Typer
 from typing_extensions import Annotated
 
-from .cache import CacheMapping
+from .cache import Mapping
 from .file import File
-from .replacement_policy import ReplacementPolicyType
+from .replacement_policy import FIFO, LRU, Random, ReplacementPolicyType
+from .tools import Output, OutputType
 
 app = Typer()
 
+basicConfig(
+	filename='pysimcache.log',
+	format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+	level=DEBUG,
+)
+
 
 @app.command()
-def simular_cache(
-	# Inputs do usuário
+def main(
 	nsets: Annotated[int, Argument(min=0)],
 	bsize: Annotated[int, Argument(min=0)],
 	assoc: Annotated[int, Argument(min=0)],
 	policy: ReplacementPolicyType,
-	output: Annotated[int, Argument(min=0, max=1)],
+	output: OutputType,
 	file_name: str,
 ) -> None:
-	# Inicializando os contadores
+	"""
+	Função principal que executa a simulação do mapeamento de cache.
 
-	# Código principal da função simular_cache
-	print_cache_parameters(
-		nsets, bsize, assoc, policy, output, file_name
-	)  # TIRAR DEPOIS
+	:param nsets: Número de conjuntos (sets) no cache.
+	:param bsize: Tamanho do bloco de cache em bytes.
+	:param assoc: Grau de associatividade do cache.
+	:param policy: Tipo da política de substituição (FIFO, LRU, Random).
+	:param output: Tipo de saída (padrão, detalhada ou em arquivo).
+	:param file_name: Nome do arquivo binário contendo os endereços de memória.
+	:raises FileNotFoundError: Se o arquivo de endereços binário não for encontrado.
+	"""  # noqa: E501
+	Output.parameters(nsets, bsize, assoc, policy, file_name, output)
 
-	file_addresses = File.read_bin_file('address/' + file_name)
+	if not File.is_valid_bin_file(file_name):
+		tmp = Path('address').joinpath(file_name)
+		if not File.is_valid_bin_file(tmp.__str__()):
+			raise FileNotFoundError('O arquivo %s não existe!' % file_name)
+		file_name = tmp.__str__()
 
-	cache = CacheMapping()
-	cache.mapping(file_addresses, nsets, bsize, assoc, policy)
+	match policy:
+		case ReplacementPolicyType.RANDOM:
+			policy = Random
+		case ReplacementPolicyType.FIFO:
+			policy = FIFO
+		case ReplacementPolicyType.LRU:
+			policy = LRU
 
-	print_results(
-		cache.hits,
-		cache.misses,
-		cache.miss_compulsory,
-		cache.miss_capacity,
-		cache.miss_conflict,
-		output,
+	addresses = File.read_bin_file(file_name)
+
+	cache = Mapping(nsets=nsets, bsize=bsize, assoc=assoc, policy=policy)
+
+	hits, misses, miss_compulsory, miss_capacity, miss_conflict = cache.mapping(
+		addresses
 	)
 
-
-def print_cache_parameters(
-	nsets, bsize, assoc, policy, output, arquivo
-) -> None:
-	print(
-		f'nsets: {nsets}\n'
-		+ f'bsize: {bsize}\n'
-		+ f'assoc: {assoc}\n'
-		+ f'policy: {policy}\n'
-		+ f'output: {output}\n'
-		+ f'file: {arquivo}\n'
+	Output.results(
+		hits, misses, miss_compulsory, miss_capacity, miss_conflict, output
 	)
-
-
-def print_results(
-	hits, misses, miss_compulsorio, miss_capacidade, miss_conflito, output
-) -> None:
-	if output == 0:
-		# Impressão formal = 0
-		print(
-			f'\nacessos: {hits + misses}'
-			+ f'\nhits: {hits} | {(hits/(hits + misses))*100:.2f}%'
-			+ f'\nmisses: {misses} | {(misses/(hits + misses))*100:.2f}%'
-			+ f'\nmiss_compulsorio: {miss_compulsorio} | {(miss_compulsorio/misses)*100:.2f}%'
-			+ f'\nmiss_capacidade: {miss_capacidade} | {(miss_capacidade/misses)*100:.2f}%'
-			+ f'\nmiss_conflito: {miss_conflito} | {(miss_conflito/misses)*100:.2f}%'
-		)
-
-	elif output == 1:
-		# Impressão informal = 1
-		print(
-			f'\n{hits + misses}'
-			+ f' {hits/(hits + misses):.4f}'
-			+ f' {misses/(hits + misses):.4f}'
-			+ f' {miss_compulsorio/misses:.2f}'
-			+ f' {miss_capacidade/misses:.2f}'
-			+ f' {miss_conflito/misses:.2f}'
-		)
 
 
 app()
