@@ -118,7 +118,6 @@ class CacheMapping:
         if not flag_hit and not flag_compulsory:
             process_policy(assoc, policy, tag, index, self.cache_val, self.cache_tag)
             self.miss_capacity += 1  # Contabiliza miss de capacidade
-            self.misses += 1
 
     def conjunto_associativa(self, tag, index, nsets, assoc, policy):
         """

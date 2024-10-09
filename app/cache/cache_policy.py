@@ -1,7 +1,7 @@
 from app.cache import Block
 from app.replacement_policy import FIFO, LRU, Random, ReplacementPolicyType
 
-def process_policy(assoc, policy, tag, indice, cache_val, cache_tag):
+def process_policy(assoc, policy, tag, index, cache_val, cache_tag):
     """
     Processa a política de substituição de cache.
 
@@ -9,26 +9,26 @@ def process_policy(assoc, policy, tag, indice, cache_val, cache_tag):
         assoc (int): Número de vias associativas.
         policy (ReplacementPolicyType): Política de substituição a ser aplicada.
         tag (int): Tag do novo bloco.
-        indice (int): Índice do conjunto na cache.
+        index (int): Índice do conjunto na cache.
         cache_val (list): Lista de valores de validade da cache.
         cache_tag (list): Lista de tags da cache.
 
     Returns:
         tuple: Tupla contendo as listas atualizadas de valores de validade e tags da cache.
     """
-    blocks = create_blocks(assoc, indice, cache_val, cache_tag)
+    blocks = create_blocks(assoc, index, cache_val, cache_tag)
     new_block = Block(valid=True, tag=tag)
     updated_blocks = select_policy(policy, blocks, new_block)
-    update_cache_values(assoc, indice, updated_blocks, cache_val, cache_tag)
+    update_cache_values(assoc, index, updated_blocks, cache_val, cache_tag)
     return cache_val, cache_tag
 
-def create_blocks(assoc, indice, cache_val, cache_tag):
+def create_blocks(assoc, index, cache_val, cache_tag):
     """
     Cria uma lista de blocos a partir dos valores da cache para o conjunto específico.
 
     Args:
         assoc (int): Número de vias associativas.
-        indice (int): Índice do conjunto na cache.
+        index (int): Índice do conjunto na cache.
         cache_val (list): Lista de valores de validade da cache.
         cache_tag (list): Lista de tags da cache.
 
@@ -37,8 +37,8 @@ def create_blocks(assoc, indice, cache_val, cache_tag):
     """
     return [
         Block(
-            valid=bool(cache_val[indice * assoc + j]),
-            tag=cache_tag[indice * assoc + j],
+            valid=bool(cache_val[index * assoc + j]),
+            tag=cache_tag[index * assoc + j],
         )
         for j in range(assoc)
     ]
@@ -63,21 +63,21 @@ def select_policy(policy, blocks, new_block):
         return LRU.add(blocks, new_block)
     return blocks
 
-def update_cache_values(assoc, indice, updated_blocks, cache_val, cache_tag):
+def update_cache_values(assoc, index, updated_blocks, cache_val, cache_tag):
     """
     Atualiza os valores da cache com os blocos atualizados para o conjunto específico.
 
     Args:
         assoc (int): Número de vias associativas.
-        indice (int): Índice do conjunto na cache.
+        index (int): Índice do conjunto na cache.
         updated_blocks (list): Lista de blocos atualizada.
         cache_val (list): Lista de valores de validade da cache.
         cache_tag (list): Lista de tags da cache.
     """
     for j in range(assoc):
-        cache_val[indice * assoc + j] = 1 if updated_blocks[j].valid else 0
-        cache_tag[indice * assoc + j] = (
+        cache_val[index * assoc + j] = 1 if updated_blocks[j].valid else 0
+        cache_tag[index * assoc + j] = (
             updated_blocks[j].tag
             if updated_blocks[j].valid
-            else cache_tag[indice * assoc + j]
+            else cache_tag[index * assoc + j]
         )
