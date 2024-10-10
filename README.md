@@ -47,7 +47,7 @@ cache_simulator 256 4 1 R 1 bin_100.bin
 Resultado esperado:
 
 ```
-100, 0.92, 0.08, 1.00, 0.00, 0.00
+100 0.9200 0.0800 1.00 0.00 0.00
 ```
 
 ## Arquivo de Entrada
@@ -96,6 +96,7 @@ Certifique-se de ter o [Python 3.12](https://www.python.org/) e o [Poetry](https
 ## Funcionalidades Extras
 
 - Implementação das políticas FIFO e LRU para substituição de blocos.
+- Arquivo de log detalhando as operações feitas pela cache.
 
 ## Autores
 
