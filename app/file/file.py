@@ -11,7 +11,7 @@ class File:
 	@staticmethod
 	def read_bin_file(
 		path: str, address_size: int = 32
-	) -> Generator[int] | None:
+	) -> Generator[int, None, None] | None:
 		"""
 		Lê um arquivo binário e retorna uma lista de endereços como inteiros.
 
