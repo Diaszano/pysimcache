@@ -1,4 +1,4 @@
-from logging import DEBUG, basicConfig
+from logging import CRITICAL, DEBUG, basicConfig
 from pathlib import Path
 
 from typer import Argument, Typer
@@ -10,12 +10,6 @@ from .replacement_policy import FIFO, LRU, Random, ReplacementPolicyType
 from .tools import Output, OutputType
 
 app = Typer()
-
-basicConfig(
-	filename='pysimcache.log',
-	format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-	level=DEBUG,
-)
 
 
 @app.command()
@@ -38,6 +32,12 @@ def main(
 	:param file_name: Nome do arquivo binário contendo os endereços de memória.
 	:raises FileNotFoundError: Se o arquivo de endereços binário não for encontrado.
 	"""  # noqa: E501
+	level_log = CRITICAL if output == OutputType.STANDARD else DEBUG
+	basicConfig(
+		filename='pysimcache.log',
+		format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+		level=level_log,
+	)
 	Output.parameters(nsets, bsize, assoc, policy, file_name, output)
 
 	if not File.is_valid_bin_file(file_name):

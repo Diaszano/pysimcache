@@ -1,5 +1,6 @@
 from logging import getLogger
 from pathlib import Path
+from typing import Generator
 
 
 class File:
@@ -8,7 +9,9 @@ class File:
 	_logger = getLogger(name=__name__)
 
 	@staticmethod
-	def read_bin_file(path: str, address_size: int = 32) -> list[int] | None:
+	def read_bin_file(
+		path: str, address_size: int = 32
+	) -> Generator[int, None, None]:
 		"""
 		Lê um arquivo binário e retorna uma lista de endereços como inteiros.
 
@@ -17,27 +20,22 @@ class File:
 			address_size (int, opcional): O tamanho do endereço em bits. O valor padrão é 32 bits.
 
 		Returns:
-			list[int] | None: Uma lista de endereços inteiros se o arquivo for válido, ou None se o arquivo não for válido.
+			Generator[int] | None: Um Generator de endereços inteiros se o arquivo for válido, ou None se o arquivo não for válido.
 		"""  # noqa: E501
 		if not File.is_valid_bin_file(path=path):
-			File._logger.warning(
-				'Não foi possível ler o arquivo binário "%s". Motivo: o arquivo é inválido ou não atende aos requisitos esperados.',  # noqa: E501
+			File._logger.critical(
+				'Não foi possível ler o arquivo binário "%s". Motivo: o '
+				'arquivo é inválido ou não atende aos requisitos esperados.',
 				path,
 			)
-			return None
-
-		address_array: list[int] = []
-		with Path(path).open(mode='rb') as file:
-			while address := file.read(int(address_size / 8)):
-				address_array.append(int.from_bytes(address))
+		else:
+			with Path(path).open(mode='rb') as file:
+				while address := file.read(int(address_size / 8)):
+					yield int.from_bytes(address, byteorder='big')
 
 		File._logger.info(
-			'Leitura do arquivo "%s" concluída com sucesso. Total de endereços lidos: %d.',  # noqa: E501
-			path,
-			len(address_array),
+			'Leitura do arquivo "%s" concluída com sucesso.', path
 		)
-
-		return address_array
 
 	@staticmethod
 	def is_valid_file(path: str) -> bool:

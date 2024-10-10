@@ -1,5 +1,6 @@
 from logging import getLogger
 from math import log2
+from typing import Generator
 
 from app.replacement_policy import ReplacementPolicy
 
@@ -46,18 +47,15 @@ class Mapping:
 		self.nbits_tag = 32 - self.nbits_offset - self.nbits_index
 
 	def mapping(
-		self: 'Mapping', memory_addresses: list[int]
+		self: 'Mapping', memory_addresses: Generator[int, None, None]
 	) -> tuple[int, int, int, int, int]:
 		"""
 		Realiza o mapeamento de uma lista de endereços de memória no cache.
 
-		:param memory_addresses: Lista de endereços de memória a serem mapeados.
+		:param memory_addresses: Generator de endereços de memória a serem mapeados.
 		:return: Resultado do mapeamento da cache.
-		"""
-		self.__logger.info(
-			'Iniciando o mapeamento de %s endereços de memória',
-			len(memory_addresses),
-		)
+		"""  # noqa: E501
+		self.__logger.info('Iniciando o mapeamento dos endereços de memória')
 
 		for address in memory_addresses:
 			tag = address >> (self.nbits_offset + self.nbits_index)
