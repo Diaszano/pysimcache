@@ -11,7 +11,7 @@ class File:
 	@staticmethod
 	def read_bin_file(
 		path: str, address_size: int = 32
-	) -> Generator[int, None, None] | None:
+	) -> Generator[int, None, None]:
 		"""
 		Lê um arquivo binário e retorna uma lista de endereços como inteiros.
 
@@ -24,14 +24,14 @@ class File:
 		"""  # noqa: E501
 		if not File.is_valid_bin_file(path=path):
 			File._logger.critical(
-				'Não foi possível ler o arquivo binário "%s". Motivo: o arquivo é inválido ou não atende aos requisitos esperados.',  # noqa: E501
+				'Não foi possível ler o arquivo binário "%s". Motivo: o '
+				'arquivo é inválido ou não atende aos requisitos esperados.',
 				path,
 			)
-			return None
-
-		with Path(path).open(mode='rb') as file:
-			while address := file.read(int(address_size / 8)):
-				yield int.from_bytes(address, byteorder='big')
+		else:
+			with Path(path).open(mode='rb') as file:
+				while address := file.read(int(address_size / 8)):
+					yield int.from_bytes(address, byteorder='big')
 
 		File._logger.info(
 			'Leitura do arquivo "%s" concluída com sucesso.', path
